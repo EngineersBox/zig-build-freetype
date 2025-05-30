@@ -1,14 +1,16 @@
 .{
-    .name = "freetype",
+    .name = .freetype,
     .version = "0.0.0",
+    .fingerprint = 0xac2059b6a6e4492d,
     .dependencies = .{
         .libpng = .{
-            .url = "https://github.com/mitchellh/zig-build-libpng/archive/6cb6e26da19c0bdb06aeb89aa46a2e14091b854c.tar.gz",
-            .hash = "1220d0134e1e0887e4697322ea31bbf84fc4583917ac048b49c6ebf8505e2c916a91",
+            .url = "https://github.com/engineersbox/zig-build-libpng/archive/b2a5960d2ef6c9fec0e16db749bd969493819fca.tar.gz",
+            .hash = "libpng-0.0.0-3MR25io4WgDlSi4YOfEqNi5WbHp7cmJ6WSiVV45RzfvK",
         },
         .zlib = .{
-            .url = "https://github.com/mitchellh/zig-build-zlib/archive/830761587bf91616d45e6a2669359e7eb5d27ae7.tar.gz",
-            .hash = "12201c84e11aae4391e032f2ed86862d7ee2259a0b4892ee76b2e361d06e8da37338",
+            .url = "https://github.com/engineersbox/zig-build-zlib/archive/54f59d4b37ea466eaf72f65024a5bbe54ede6a65.tar.gz",
+            .hash = "N-V-__8AAPIbQABQQv_r4uXbrMHfiqpcrvFag2O_s8pd-Fl4",
         },
     },
+    .paths = .{""},
 }

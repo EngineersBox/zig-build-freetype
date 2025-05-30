@@ -12,7 +12,11 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     });
     lib.linkLibC();
-    if (target.isLinux()) {
+    const supports_static_math_lib: bool = switch (target.result.os.tag) {
+        .linux, .freebsd, .openbsd, .netbsd, .macos => true,
+        else => false,
+    };
+    if (supports_static_math_lib) {
         lib.linkSystemLibrary("m");
     }
 
@@ -23,7 +27,7 @@ pub fn build(b: *std.Build) !void {
         lib.linkLibrary(libpng_dep.artifact("png"));
     }
 
-    lib.addIncludePath(.{ .path = "upstream/include" });
+    lib.addIncludePath(b.path("upstream/include"));
 
     var flags = std.ArrayList([]const u8).init(b.allocator);
     defer flags.deinit();
@@ -38,40 +42,46 @@ pub fn build(b: *std.Build) !void {
         "-fno-sanitize=undefined",
     });
     if (libpng_enabled) try flags.append("-DFT_CONFIG_OPTION_USE_PNG=1");
-    lib.addCSourceFiles(srcs, flags.items);
+    lib.addCSourceFiles(.{
+        .files = srcs,
+        .flags = flags.items,
+    });
 
-    switch (target.getOsTag()) {
+    switch (target.result.os.tag) {
         .linux => lib.addCSourceFile(.{
-            .file = .{ .path = "upstream/builds/unix/ftsystem.c" },
+            .file = b.path("upstream/builds/unix/ftsystem.c"),
             .flags = flags.items,
         }),
         .windows => lib.addCSourceFile(.{
-            .file = .{ .path = "upstream/builds/windows/ftsystem.c" },
+            .file = b.path("upstream/builds/windows/ftsystem.c"),
             .flags = flags.items,
         }),
         else => lib.addCSourceFile(.{
-            .file = .{ .path = "upstream/src/base/ftsystem.c" },
+            .file = b.path("upstream/src/base/ftsystem.c"),
             .flags = flags.items,
         }),
     }
-    switch (target.getOsTag()) {
+    switch (target.result.os.tag) {
         .windows => {
-            lib.addCSourceFiles(&.{
-                "upstream/builds/windows/ftdebug.c",
-            }, flags.items);
+            lib.addCSourceFiles(.{
+                .files = &.{
+                    "upstream/builds/windows/ftdebug.c",
+                },
+                .flags = flags.items,
+            });
             lib.addWin32ResourceFile(.{
-                .file = .{ .path = "upstream/src/base/ftver.rc" },
+                .file = b.path("upstream/src/base/ftver.rc"),
             });
         },
         else => lib.addCSourceFile(.{
-            .file = .{ .path = "upstream/src/base/ftdebug.c" },
+            .file = b.path("upstream/src/base/ftdebug.c"),
             .flags = flags.items,
         }),
     }
 
-    lib.installHeader("include/freetype-zig.h", "freetype-zig.h");
-    lib.installHeader("upstream/include/ft2build.h", "ft2build.h");
-    lib.installHeadersDirectory("upstream/include/freetype", "freetype");
+    lib.installHeader(b.path("include/freetype-zig.h"), "freetype-zig.h");
+    lib.installHeader(b.path("upstream/include/ft2build.h"), "ft2build.h");
+    lib.installHeadersDirectory(b.path("upstream/include/freetype"), "freetype", .{});
 
     b.installArtifact(lib);
 }
